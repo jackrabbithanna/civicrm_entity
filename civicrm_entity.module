@@ -606,6 +606,25 @@ function _civicrm_entity_post_invoke($op, CiviEntityStorage $storage, EntityInte
 }
 
 /**
+ * Implements hook_query_TAG_alter().
+ */
+function civicrm_entity_query_civicrm_contact_access_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  $tables = $query->getTables();
+
+  $base_table = $query->getMetaData('base_table');
+
+  // Determine if Civi tables in separate database.
+  // Get current user's linked contact.
+  // Which domain for the UFMatch record?
+  // Iterate through tables to find contact tables.
+  // Call right method to get ACL where conditions.
+  // Parse conditions to prepare for addition.
+  // Add query conditions correctly.
+  // Caching .. Set cache context (will need to be written)
+
+}
+
+/**
  * Implements hook_views_query_alter().
  */
 function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {

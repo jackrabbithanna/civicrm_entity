@@ -72,6 +72,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
       // database connection exists in Drupal.
       // @see \Drupal\views\Plugin\views\display\DisplayPluginBase::getPlugin
       'query_id' => 'civicrm_views_query',
+      'access query tag' => $this->entityType->id() . '_access',
     ];
     $data[$base_table]['table']['entity revision'] = FALSE;
     if ($label_key = $this->entityType->getKey('label')) {
