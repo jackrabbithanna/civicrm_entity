@@ -613,11 +613,54 @@ function civicrm_entity_query_civicrm_contact_access_alter(Drupal\Core\Database\
 
   $base_table = $query->getMetaData('base_table');
 
-  // Determine if Civi tables in separate database.
-  // Get current user's linked contact.
-  // Which domain for the UFMatch record?
+  $account = \Drupal::service('current_user');
+  if ($account->isAnonymous()) {
+    // Do what?
+    return;
+  }
   // Iterate through tables to find contact tables.
+  // Confirm civicrm_contact is being queried.
+  // Is it a base table, or related table?
+  // It is possible for it to be both...do we add conditions twice?
+
+
+
+  // Determine if Civi tables in separate database.
+  // Create database connection.
+  $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+  $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+  // If CiviCRM tables in a separate database.
+  if (isset($civicrm_database_info['default'])) {
+    $connection = Database::getConnection('default', $civicrm_connection_name);
+  }
+  // Civi tables in Drupal database.
+  else {
+    $connection = Database::getConnection('default', 'default');
+  }
+
+  \Drupal::service('civicrm')->initialize();
+  // Get current user's linked contact.
+  $query = $connection->select('civicrm_uf_match', 'uf');
+  $query->fields('uf', ['contact_id']);
+  //$query->addJoin('INNER', 'civicrm_contact', 'c', 'c.id = uf.contact_id');
+  $query->condition('uf.uf_id', $account->id(), '=');
+  // Which domain for the UFMatch record?
+  if (defined('CIVICRM_DOMAIN_ID')) {
+    $query->condition('uf.domain_id', CIVICRM_DOMAIN_ID, '=');
+  }
+  $result = $query->execute();
+  $contact_id = $result->fetchField();
+  if (empty($contact_id)) {
+    // Assuming we do nothing if contact is not found.
+    return;
+  }
   // Call right method to get ACL where conditions.
+  $dao = new \CRM_Core_DAO();
+  $conditions = $dao->getSelectWhereClause('contact', 'Contact', []);
+
+
+  $conditions = $dao->addSelectWhereClause('Contact', $contact_id);
+
   // Parse conditions to prepare for addition.
   // Add query conditions correctly.
   // Caching .. Set cache context (will need to be written)
